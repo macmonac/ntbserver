@@ -179,7 +179,7 @@ def create_machine():
 def main():
     parser = ArgumentParser(description="NTBServer CLI",add_help=True)
     parser.add_argument('-a','--all', action="store_true",help='All IDs')
-    parser.add_argument('-i','--id', action="append",nargs='+',help='Machines IDs')
+    parser.add_argument('-i','--id', action="append",nargs='+',help='Machines IDs', default=[[]])
     parser.add_argument('-l', '--list', action='store_true',help='List machines')
     parser.add_argument('--fields', action='append',nargs='+',help='Field\'s filters ( default : machine_id )', default=[['machine_id']])
     parser.add_argument('--format', action='store',help='Output format ( default : csv )', choices=['csv','json'], default='csv')
