@@ -1,0 +1,37 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+function alert_link() {
+    if [ -h /etc/nginx/sites-enabled/ntbserver.conf ]
+    then
+        db_fset ntbserver/disablenginxvhost seen false
+        db_input high ntbserver/disablenginxvhost
+    fi
+    if [ -h /etc/uwsgi/apps-enabled/ntbserver.ini ]
+    then
+        db_fset ntbserver/disableuwsgiapp seen false
+        db_input high ntbserver/disableuwsgiapp
+    fi
+    db_go
+}
+
+case "$1" in
+    remove)
+        alert_link
+        ;;
+    purge)
+        alert_link
+        if (which deluser && getent passwd ntbserver) &> /dev/null
+        then
+            deluser --system --quiet ntbserver
+        fi
+        if (which delgroup && getent group ntbserver) &> /dev/null
+        then
+            delgroup --system --quiet ntbserver
+        fi
+        db_purge
+        ;;
+esac
+
+exit 0

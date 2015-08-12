@@ -1,0 +1,6 @@
+ntbserver (2.0.0) unstable; urgency=low
+
+  * First rewrite in django
+
+ -- Pierre BLONDEAU <pierre.blondeau@unicaen.fr>  Mon, 06 Jul 2015 11:34:18 +0200
+

@@ -1,0 +1,4 @@
+debian/ntbserver/*
+debian/*debhelper*
+debian/files
+*.pyc

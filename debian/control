@@ -1,0 +1,16 @@
+Source: ntbserver
+Section: admin
+Priority: optional
+Maintainer: Pierre Blondeau <pierre.blondeau@unicaen.fr>, Davy Gigan <davy.gigan@unicaen.fr>, Gottstein Cyprien <cyprien.gottstein@unicaen.fr>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 2.0.0
+Homepage: https://forge.greyc.fr/projects/network-trusted-boot
+Vcs-Browser: https://forge.greyc.fr/projects/ntbserver/repository
+Vcs-Git: https://forge.greyc.fr/git/ntbserver
+
+Package: ntbserver
+Section: python
+Architecture: all
+Depends: python-django (>=1.7), python-crypto, python-mongoengine, python-argcomplete
+Recommends: nginx, uwsgi, uwsgi-plugin-python
+Description: Network Trusted Boot

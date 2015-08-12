@@ -1,0 +1,15 @@
+Template: ntbserver/enablenginxvhost
+Type: note
+Description: nginx installed, you can use the sample VHOST conf file in /etc/ntbserver/nginx-vhost. Configure it, create a link ('ln -s /etc/ntbserver/nginx-vhost.conf /etc/nginx/sites-enabled/ntbserver.conf') and reload nginx.
+
+Template: ntbserver/enableuwsgiapp
+Type: note
+Description: uwsgi installed. you can use the sample APP conf file in /etc/ntbserver/uwgsi.ini. Configure it if necessary, create a link ('ln -s /etc/ntbserver/uwgsi.ini /etc/uwsgi/apps-enabled/ntbserver.ini' ) and reload uwsgi.
+
+Template: ntbserver/disablenginxvhost
+Type: note
+Description: You should disable the nginx VHOST. Remove the link ('[ -h /etc/nginx/sites-enabled/ntbserver.conf ] && /bin/rm /etc/nginx/sites-enabled/ntbserver.conf') and reload nginx.
+
+Template: ntbserver/disableuwsgiapp
+Type: note
+Description: You should disable the uwsgi APP. Remove the link ('[ -h /etc/uwsgi/apps-enabled/ntbserver.ini ] && /bin/rm /etc/uwsgi/apps-enabled/ntbserver.ini') and reload uwsgi.

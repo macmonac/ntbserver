@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# Name of the package
+PACKAGE=ntbserver
+
+# Destination directory where files will be installed
+DESTDIR=$(CURDIR)/debian/$(PACKAGE)
+
+%:
+	dh $@ --with python2
+
+override_dh_auto_install:
+	install -d -m 755 $(DESTDIR)/usr/share/ntbserver
+	cp -a $(CURDIR)/ntbserver/ $(DESTDIR)/usr/share/ntbserver/
+	cp -a $(CURDIR)/ntbserver_api/ $(DESTDIR)/usr/share/ntbserver/
+	cp $(CURDIR)/manage.py $(DESTDIR)/usr/share/ntbserver/manage.py
+	echo $(SRCDIR)
+	install -d -m 755 $(DESTDIR)/etc/ntbserver
+	install -d -m 700 $(DESTDIR)/etc/ntbserver/ssl
+	cp $(CURDIR)/ntbserver/local_settings.py.example $(DESTDIR)/etc/ntbserver/local_settings.py
+	ln -fs /etc/ntbserver/local_settings.py $(DESTDIR)/usr/share/ntbserver/ntbserver/local_settings.py
+	cp $(CURDIR)/conf/nginx-vhost.conf $(DESTDIR)/etc/ntbserver/
+	cp $(CURDIR)/conf/uwgsi.ini $(DESTDIR)/etc/ntbserver/
+	ln -fs /etc/ntbserver/secret.txt $(DESTDIR)/usr/share/ntbserver/ntbserver/secret.txt
+	install -d -m 755 $(DESTDIR)/usr/bin
+	install -m 755 $(CURDIR)/tools/ntbserver-cli $(DESTDIR)/usr/bin
+	install -m 755 $(CURDIR)/tools/ntbserver-migrate $(DESTDIR)/usr/bin

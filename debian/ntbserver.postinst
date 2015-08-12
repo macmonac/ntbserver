@@ -1,0 +1,46 @@
+#!/bin/bash
+
+. /usr/share/debconf/confmodule
+
+if [ "$1" = "configure" ]
+then
+    if ! getent group ntbserver &> /dev/null
+    then
+        addgroup --system ntbserver >/dev/null
+    fi
+    if ! getent passwd ntbserver &> /dev/null
+    then
+        adduser --system --home /usr/share/ntbserver/ --ingroup ntbserver --no-create-home --shell /bin/false ntbserver
+    fi
+fi
+
+chown -R ntbserver:ntbserver /var/log/ntbserver/
+if [ ! -e "/etc/ntbserver/secret.txt" ]
+then
+    python -c 'import random; import string; print "".join([random.SystemRandom().choice(string.digits + string.letters + string.punctuation) for i in range(100)])' > /etc/ntbserver/secret.txt
+    chown -R ntbserver:ntbserver /etc/ntbserver/secret.txt
+    chmod 0600 /etc/ntbserver/secret.txt
+fi
+
+chmod 700 /etc/ntbserver/ssl/
+chown -R ntbserver:ntbserver /etc/ntbserver/ssl/
+
+type nginx &> /dev/null && [ ! -h /etc/nginx/sites-enabled/ntbserver.conf ] && db_input high ntbserver/enablenginxvhost
+type uwsgi &> /dev/null && [ ! -h /etc/uwsgi/apps-enabled/ntbserver.ini ] && db_input high ntbserver/enableuwsgiapp
+db_go
+
+if pgrep -a uwsgi | grep /etc/uwsgi/apps-enabled/ntbserver.ini &> /dev/null
+then
+    echo "uwsgi reload..."
+    if which service &>/dev/null ; then
+        service uwsgi reload /etc/uwsgi/apps-enabled/ntbserver.ini
+    elif which invoke-rc.d &>/dev/null ; then
+        invoke-rc.d uwsgi reload /etc/uwsgi/apps-enabled/ntbserver.ini
+    elif [ -x "/etc/init.d/uwsgi" ] ; then
+        /etc/init.d/uwsgi reload /etc/uwsgi/apps-enabled/ntbserver.ini
+    else
+        echo "or not, i don't know how reload it."
+    fi
+fi
+
+exit 0

@@ -1,0 +1,12 @@
+/var/log/ntbserver*.log
+{
+    weekly
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    postrotate
+        invoke-rc.d rsyslog rotate > /dev/null
+    endscript
+}
