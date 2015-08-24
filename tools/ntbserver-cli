@@ -289,10 +289,9 @@ def main():
                 # create_machine(ids[0], public_key=public_key, passphrase=passphrase)
                 create_machine(ids[0], public_key=public_key)
     else :
-        print_help="Error"
+        print_help="Nothind done"
 
     if print_help :
-        sys.stderr.write(parser.format_usage())
         sys.stderr.write("%s\n" %(print_help))
         sys.exit(1)
 
