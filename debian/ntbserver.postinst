@@ -14,6 +14,7 @@ then
     fi
 fi
 
+touch /var/log/ntbserver/ntbserver.log
 chown -R ntbserver:ntbserver /var/log/ntbserver/
 if [ ! -e "/etc/ntbserver/secret.txt" ]
 then
