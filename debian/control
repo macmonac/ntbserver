@@ -13,4 +13,5 @@ Section: python
 Architecture: all
 Depends: python-django (>=1.7), python-crypto, python-mongoengine, python-argcomplete
 Recommends: nginx, uwsgi, uwsgi-plugin-python
+Conflicts: ntb-server
 Description: Network Trusted Boot
