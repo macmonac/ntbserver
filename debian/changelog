@@ -1,3 +1,16 @@
+ntbserver (2.1.0) unstable; urgency=medium
+
+  * [6cc1557e] Add IPv6 listen in NGINX configuration template
+  * [d42f59fa] Add README
+  * [d703b808] Refactor source ( flake8 )
+  * [6b7d36c6] Refactor sources ( flake8 )
+  * [c0fb523e] Solved error in Log date
+  * [d80fb0b3] Add field to action message and create search function
+  * [9f203c64] Add clear message if no log
+  * [cc0802e8] Specify encoding for wsgi.py
+
+ -- Pierre BLONDEAU <blondeau@jarod.info.unicaen.fr>  Tue, 14 Feb 2017 23:42:02 +0100
+
 ntbserver (2.0.0) unstable; urgency=low
 
   * First rewrite in django
