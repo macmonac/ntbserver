@@ -152,11 +152,16 @@ class Logs(Document):
     ip = StringField(required=True, max_length=255)
     action = StringField(required=True, max_length=255)
     result = BooleanField(required=True, default=False)
-    date = DateTimeField(default=datetime.datetime.now())
+    date = DateTimeField()
     machine = ReferenceField(Machine)
 
     def __unicode__(self):
         return self.action
+
+    def save(self, *args, **kwargs):
+        if not self.date:
+            self.date = datetime.datetime.now()
+        return super(Logs, self).save(*args, **kwargs)
 
 
 class Version(Document):
