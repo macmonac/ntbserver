@@ -82,7 +82,8 @@
 # knowledge of the CeCILL-B license and that you accept its terms.
 
 from mongoengine import *
-import os, datetime
+import os
+import datetime
 from Crypto.PublicKey import RSA
 # from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Cipher import PKCS1_v1_5 as PKCS1_v1_5_Cipher
@@ -90,15 +91,16 @@ from Crypto.Signature import PKCS1_v1_5 as PKCS1_v1_5_Signature
 from Crypto.Hash import SHA256
 from base64 import b64encode, b64decode
 
+
 class Machine(Document):
-    machine_id = StringField(unique=True , required=True , max_length=255)
+    machine_id = StringField(unique=True, required=True, max_length=255)
     public_key = StringField(required=True)
     passphrase = StringField()
     disabled = BooleanField(required=True, default=False)
     disabled_date = DateTimeField()
     prepared_passphrase = StringField()
     prepared_passphrase_date = DateTimeField()
-    meta = { 'indexes': [{'fields': ['machine_id'],'unique': True}] }
+    meta = {'indexes': [{'fields': ['machine_id'], 'unique': True}]}
 
     def __unicode__(self):
         return self.machine_id
@@ -123,7 +125,7 @@ class Machine(Document):
             self.prepared_passphrase_date = datetime.datetime.now()
 
     def verify_prepare_passphrase(self):
-        if not self.prepared_passphrase or not self.prepared_passphrase_date or self.prepared_passphrase_date < datetime.datetime.now()-datetime.timedelta(minutes=30):
+        if not self.prepared_passphrase or not self.prepared_passphrase_date or self.prepared_passphrase_date < datetime.datetime.now() - datetime.timedelta(minutes=30):
             self.prepare_passphrase()
             self.save()
         return self.prepared_passphrase
@@ -145,8 +147,9 @@ class Machine(Document):
         self.disabled_date = datetime.datetime.now()
         self.save()
 
+
 class Logs(Document):
-    ip = StringField(required=True , max_length=255)
+    ip = StringField(required=True, max_length=255)
     action = StringField(required=True, max_length=255)
     result = BooleanField(required=True, default=False)
     date = DateTimeField(default=datetime.datetime.now())
@@ -154,6 +157,7 @@ class Logs(Document):
 
     def __unicode__(self):
         return self.action
+
 
 class Version(Document):
     version = IntField(required=True, default=3)
