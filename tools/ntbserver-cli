@@ -93,6 +93,7 @@ from argparse import ArgumentParser, FileType
 import django
 from Crypto.PublicKey import RSA
 from copy import deepcopy
+import socket
 
 # Pour récupérer les objects django
 sys.path.append("/usr/share/ntbserver")
@@ -120,15 +121,58 @@ def ids_machines(ids, error=True):
     return machines
 
 
-def list_machines(machines, fields=["machine_id"], all_fields=False, format='csv', output=None, skip_column_names=False):
+def search_machines(search):
+    res = []
+    machines_sid = Machine.objects.filter(machine_id__icontains=search)
+    for m in machines_sid:
+        res.append(m)
+    logs_sip = Logs.objects.filter(ip__icontains=search).select_related()
+    for l in logs_sip:
+        if isinstance(l.machine, Machine):
+            res.append(l.machine)
+    try:
+        ips = []
+        for family, socktype, proto, canonname, sockaddr in socket.getaddrinfo(search, None):
+            ips.append(sockaddr[0])
+        ips = list(set(ips))
+        for ip in ips:
+            logs_sip = Logs.objects.filter(ip=ip).select_related()
+            for l in logs_sip:
+                if isinstance(l.machine, Machine):
+                    res.append(l.machine)
+    except:
+        pass
+    return list(set(res))
+
+
+def last_log_passphrase_ok_info(machine):
+    last_log = Logs.objects.filter(machine=machine, result=True, action='passphrase').order_by('-date').first()
+    if last_log :
+        try:
+            host = "%s ( %s )" % (socket.gethostbyaddr(last_log.ip)[0], last_log.ip)
+        except:
+            host = last_log.ip
+        return host, last_log.date
+    else:
+        return None, None
+
+
+def list_machines(machines, fields=['machine_id', 'last_passphrase_machine', 'last_passphrase_date'], all_fields=False, format='csv', output=None, skip_column_names=False, skip_last_passphrase=False):
     res = []
     machine_fields = dict(Machine._fields.items()).keys()
+    if not skip_last_passphrase:
+        machine_fields.extend(['last_passphrase_machine', 'last_passphrase_date'])
     res_fields = machine_fields if all_fields else fields
     for m in machines:
+        if not skip_last_passphrase:
+            last_log_host, last_log_date = last_log_passphrase_ok_info(m)
         if all(k in machine_fields for k in res_fields):
             extract = {}
             for f in res_fields:
                 extract[f] = m[f]
+            if not skip_last_passphrase:
+                extract['last_passphrase_machine'] = last_log_host
+                extract['last_passphrase_date'] = last_log_date
             res.append(extract)
         else:
             print("Fields error. Avaliable : %s" % (",".join(machine_fields)))
@@ -149,19 +193,22 @@ def print_res(res, format='csv', output=None, skip_column_names=False):
 
 def disable_machines(machines):
     for m in machines:
-        if yes_no("Are you sure you want to disable machine : %s" % (m.machine_id)):
+        last_log_host, last_log_date = last_log_passphrase_ok_info(m)
+        if yes_no("Are you sure you want to disable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.disable()
 
 
 def enable_machines(machines):
     for m in machines:
-        if yes_no("Are you sure you want to enable machine : %s" % (m.machine_id)):
+        last_log_host, last_log_date = last_log_passphrase_ok_info(m)
+        if yes_no("Are you sure you want to enable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.enable()
 
 
 def delete_machines(machines):
     for m in machines:
-        if yes_no("Are you sure you want to delete machine : %s" % (m.machine_id)):
+        last_log_host, last_log_date = last_log_passphrase_ok_info(m)
+        if yes_no("Are you sure you want to delete machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.delete()
 
 
@@ -184,8 +231,9 @@ def convert_machines(ids):
         else:
             machines.append(m[0])
     for m in machines:
+        last_log_host, last_log_date = last_log_passphrase_ok_info(m)
         new_machine_id = convert_uuid(m.machine_id)
-        if yes_no("Are you sure you want to convert %s -> %s" % (m.machine_id, new_machine_id)):
+        if yes_no("Are you sure you want to convert %s -> %s ( LP : %s )" % (m.machine_id, new_machine_id, last_log_host)):
             m.machine_id = new_machine_id
             m.save()
 
@@ -235,6 +283,7 @@ def main():
     parser.add_argument('--format', action='store', help='Output format ( default : csv )', choices=['csv', 'json'], default='csv')
     parser.add_argument('--output', action='store', help='Output file ( default : stdout )', type=FileType('wb', 0), default='-')
     parser.add_argument('-N', '--skip-column-names', action='store_true', help='Do not write column names in results.')
+    parser.add_argument('--skip-last-passphrase', action='store_true', help='Do not write columns last_passphrase_machine and last_passphrase_date')
     action.add_argument('-d', '--disable', action='store_true', help='Disable machines')
     action.add_argument('-e', '--enable', action='store_true', help='Enable machines')
     action.add_argument('-cu', '--convert-uuid', action='store_true', help='Convert machines UUID from OLD or NEW')
@@ -243,8 +292,7 @@ def main():
     # parser.add_argument('--passphrase', action="store",help='Machine passphrase', default=None)
     action.add_argument('--delete', action='store_true', help='Delete machines')
     action.add_argument('--clone', action='store', help='Clone one machine to new one')
-    # parser.add_argument('-s', '--search', action='store_true', help='Search machines')
-    # parser.add_argument('--ip', action='append', help='Search ID used by IPs')
+    action.add_argument('-s', '--search', action='store', help='Search machines')
     parser.add_argument('-f', '--force', action='store_true', help='Force action')
     parser.add_argument('-v', '--verbose', action='store_true', help='Show more informations')
 
@@ -267,9 +315,12 @@ def main():
     elif ids:
         error = False if args.convert_uuid or args.create else True
         machines = ids_machines(ids, error)
+    elif args.search:
+        machines = search_machines(args.search)
+        args.list = True
 
     if machines and args.list:
-        list_machines(machines, fields=fields, all_fields=args.all_fields, format=args.format, output=args.output, skip_column_names=args.skip_column_names)
+        list_machines(machines, fields=fields, all_fields=args.all_fields, format=args.format, output=args.output, skip_column_names=args.skip_column_names, skip_last_passphrase=args.skip_last_passphrase)
     elif machines and args.disable:
         disable_machines(machines)
     elif machines and args.enable:
