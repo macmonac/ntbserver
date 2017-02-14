@@ -171,8 +171,8 @@ def list_machines(machines, fields=['machine_id', 'last_passphrase_machine', 'la
             for f in res_fields:
                 extract[f] = m[f]
             if not skip_last_passphrase:
-                extract['last_passphrase_machine'] = last_log_host
-                extract['last_passphrase_date'] = last_log_date
+                extract['last_passphrase_machine'] = last_log_host if last_log_host else 'None'
+                extract['last_passphrase_date'] = last_log_date if last_log_date else 'None'
             res.append(extract)
         else:
             print("Fields error. Avaliable : %s" % (",".join(machine_fields)))
