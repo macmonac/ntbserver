@@ -1,3 +1,6 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Copyright GREYC - UMR 6072 ; Université de Caen Normandie
 # Esplanade de la paix
 # CS 14032
