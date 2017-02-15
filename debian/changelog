@@ -1,3 +1,9 @@
+ntbserver (2.1.1) unstable; urgency=medium
+
+  * [da344707] Delete logs when delete machine
+
+ -- Pierre BLONDEAU <blondeau@jarod.info.unicaen.fr>  Wed, 15 Feb 2017 10:51:58 +0100
+
 ntbserver (2.1.0) unstable; urgency=medium
 
   * [6cc1557e] Add IPv6 listen in NGINX configuration template
