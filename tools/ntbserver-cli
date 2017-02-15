@@ -210,6 +210,7 @@ def delete_machines(machines):
         last_log_host, last_log_date = last_log_passphrase_ok_info(m)
         if yes_no("Are you sure you want to delete machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.delete()
+            Logs.objects.filter(machine=m).delete()
 
 
 def clone_machine(machine, new_id):
@@ -353,7 +354,7 @@ def main():
                 # create_machine(ids[0], public_key=public_key, passphrase=passphrase)
                 create_machine(ids[0], public_key=public_key)
     else:
-        print_help = "Nothind done"
+        print_help = "Nothing done"
 
     if print_help:
         sys.stderr.write("%s\n" % (print_help))
