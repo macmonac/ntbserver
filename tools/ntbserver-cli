@@ -94,6 +94,7 @@ import django
 from Crypto.PublicKey import RSA
 from copy import deepcopy
 import socket
+import datetime
 
 # Pour récupérer les objects django
 sys.path.append("/usr/share/ntbserver")
@@ -246,6 +247,29 @@ def create_machine(id, public_key, passphrase=None):
     m.save()
 
 
+def clean_logs():
+    if yes_no("Are you sure you want clean dereference logs"):
+        count_clean = 0
+        logs = Logs.objects.all()
+        count_all = logs.count()
+        for l in logs:
+            if not isinstance(l.machine, Machine):
+                l.delete()
+                count_clean = count_clean + 1
+        print("Clean %i/%i logs" % (count_clean, count_all))
+
+
+def clean_old_logs():
+    if yes_no("Are you sure you want clean logs older than one year"):
+        count_all = Logs.objects.count()
+        date_old = datetime.datetime.now() - datetime.timedelta(days=365)
+        logs_to_clean = Logs.objects.filter(date__gt=date_old)
+        count_clean = logs_to_clean.count()
+        for l in logs_to_clean:
+            l.delete()
+        print("Clean %i/%i logs" % (count_clean, count_all))
+
+
 def yes_no(question, default=False):
     global force
     if force:
@@ -294,6 +318,8 @@ def main():
     action.add_argument('--delete', action='store_true', help='Delete machines')
     action.add_argument('--clone', action='store', help='Clone one machine to new one')
     action.add_argument('-s', '--search', action='store', help='Search machines')
+    action.add_argument('--clean-logs', action='store_true', help='Clean logs where machines have been deleted')
+    action.add_argument('--clean-old-logs', action='store_true', help='Clean logs older than one year')
     parser.add_argument('-f', '--force', action='store_true', help='Force action')
     parser.add_argument('-v', '--verbose', action='store_true', help='Show more informations')
 
@@ -353,6 +379,10 @@ def main():
             if not print_help:
                 # create_machine(ids[0], public_key=public_key, passphrase=passphrase)
                 create_machine(ids[0], public_key=public_key)
+    elif args.clean_logs:
+        clean_logs()
+    elif args.clean_old_logs:
+        clean_old_logs()
     else:
         print_help = "Nothing done"
 
