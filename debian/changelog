@@ -1,3 +1,9 @@
+ntbserver (2.2.0) unstable; urgency=medium
+
+  * [8cb3b408] Add clean logs functions
+
+ -- Pierre BLONDEAU <blondeau@jarod.info.unicaen.fr>  Wed, 15 Feb 2017 11:35:38 +0100
+
 ntbserver (2.1.1) unstable; urgency=medium
 
   * [da344707] Delete logs when delete machine
