@@ -195,21 +195,21 @@ def print_res(res, format='csv', output=None, skip_column_names=False):
 def disable_machines(machines):
     for m in machines:
         last_log_host, last_log_date = last_log_passphrase_ok_info(m)
-        if yes_no("Are you sure you want to disable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
+        if yes_no("Disable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.disable()
 
 
 def enable_machines(machines):
     for m in machines:
         last_log_host, last_log_date = last_log_passphrase_ok_info(m)
-        if yes_no("Are you sure you want to enable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
+        if yes_no("Enable machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.enable()
 
 
 def delete_machines(machines):
     for m in machines:
         last_log_host, last_log_date = last_log_passphrase_ok_info(m)
-        if yes_no("Are you sure you want to delete machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
+        if yes_no("Delete machine : %s ( LP : %s )" % (m.machine_id, last_log_host)):
             m.delete()
             Logs.objects.filter(machine=m).delete()
 
@@ -278,11 +278,11 @@ def yes_no(question, default=False):
     valid = {"yes": True, "y": True,
              "no": False, "n": False}
     if default:
-        prompt = " [Y/n] "
+        prompt = " ? [Y/n] "
     elif not default:
-        prompt = " [y/N] "
+        prompt = " ? [y/N] "
     else:
-        prompt = " [y/n] "
+        prompt = " ? [y/n] "
 
     while True:
         sys.stdout.write(question + prompt)
