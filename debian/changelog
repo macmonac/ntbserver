@@ -1,3 +1,12 @@
+ntbserver (2.3.1) xenial; urgency=medium
+
+  [ Davy Gigan ]
+  * [4bf6d9be] Shorten confirmation messages.
+
+  [ Pierre BLONDEAU ]
+
+ -- Pierre BLONDEAU <blondeau@jarod.info.unicaen.fr>  Fri, 15 Dec 2017 15:43:51 +0100
+
 ntbserver (2.3.0) xenial; urgency=medium
 
   * [ff9da1d3] Correction BUG #812
