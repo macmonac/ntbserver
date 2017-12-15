@@ -170,6 +170,8 @@ def list_machines(machines, fields=['machine_id', 'last_passphrase_machine', 'la
         if all(k in machine_fields for k in res_fields):
             extract = {}
             for f in res_fields:
+                if f in ['last_passphrase_machine', 'last_passphrase_date']:
+                    continue
                 extract[f] = m[f]
             if not skip_last_passphrase:
                 extract['last_passphrase_machine'] = last_log_host if last_log_host else 'None'
