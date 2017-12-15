@@ -100,8 +100,8 @@ import datetime
 sys.path.append("/usr/share/ntbserver")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ntbserver.settings")
 django.setup()
-from ntbserver_api.models import *
-from ntbserver_api.utils import *
+from ntbserver_api.models import Machine, Logs
+from ntbserver_api.utils import convert_uuid
 
 verbose = False
 force = False
@@ -148,7 +148,7 @@ def search_machines(search):
 
 def last_log_passphrase_ok_info(machine):
     last_log = Logs.objects.filter(machine=machine, result=True, action='passphrase').order_by('-date').first()
-    if last_log :
+    if last_log:
         try:
             host = "%s ( %s )" % (socket.gethostbyaddr(last_log.ip)[0], last_log.ip)
         except:
@@ -158,24 +158,24 @@ def last_log_passphrase_ok_info(machine):
         return None, None
 
 
-def list_machines(machines, fields=['machine_id', 'last_passphrase_machine', 'last_passphrase_date'], all_fields=False, format='csv', output=None, skip_column_names=False, skip_last_passphrase=False):
+def list_machines(machines, fields=['machine_id', 'last_passphrase_machine', 'last_passphrase_date'], all_fields=False, format='csv', output=None, skip_column_names=False):
     res = []
     machine_fields = dict(Machine._fields.items()).keys()
-    if not skip_last_passphrase:
-        machine_fields.extend(['last_passphrase_machine', 'last_passphrase_date'])
+    machine_fields.extend(['last_passphrase_machine', 'last_passphrase_date'])
     res_fields = machine_fields if all_fields else fields
+
     for m in machines:
-        if not skip_last_passphrase:
-            last_log_host, last_log_date = last_log_passphrase_ok_info(m)
         if all(k in machine_fields for k in res_fields):
+            if 'last_passphrase_machine' in res_fields or 'last_passphrase_date' in res_fields:
+                last_log_host, last_log_date = last_log_passphrase_ok_info(m)
             extract = {}
             for f in res_fields:
-                if f in ['last_passphrase_machine', 'last_passphrase_date']:
-                    continue
-                extract[f] = m[f]
-            if not skip_last_passphrase:
-                extract['last_passphrase_machine'] = last_log_host if last_log_host else 'None'
-                extract['last_passphrase_date'] = last_log_date if last_log_date else 'None'
+                if f == 'last_passphrase_machine':
+                    extract['last_passphrase_machine'] = last_log_host if last_log_host else 'None'
+                elif f == 'last_passphrase_date':
+                    extract['last_passphrase_date'] = last_log_date if last_log_date else 'None'
+                else:
+                    extract[f] = m[f]
             res.append(extract)
         else:
             print("Fields error. Avaliable : %s" % (",".join(machine_fields)))
@@ -305,12 +305,11 @@ def main():
     parser.add_argument('-i', '--id', action="append", nargs='+', help='Machines IDs', default=[[]])
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('-l', '--list', action='store_true', help='List machines')
-    parser.add_argument('--fields', action='append', nargs='+', help='Field\'s filters ( default : machine_id )', default=[['machine_id']])
+    parser.add_argument('--fields', action='append', nargs='+', help='Field\'s filters. Use --all-fields to find wath you want ( ex : machine_id, passphrase, last_passphrase_machine, last_passphrase_date )')
     parser.add_argument('--all-fields', action='store_true', help='All available fields')
     parser.add_argument('--format', action='store', help='Output format ( default : csv )', choices=['csv', 'json'], default='csv')
     parser.add_argument('--output', action='store', help='Output file ( default : stdout )', type=FileType('wb', 0), default='-')
     parser.add_argument('-N', '--skip-column-names', action='store_true', help='Do not write column names in results.')
-    parser.add_argument('--skip-last-passphrase', action='store_true', help='Do not write columns last_passphrase_machine and last_passphrase_date')
     action.add_argument('-d', '--disable', action='store_true', help='Disable machines')
     action.add_argument('-e', '--enable', action='store_true', help='Enable machines')
     action.add_argument('-cu', '--convert-uuid', action='store_true', help='Convert machines UUID from OLD or NEW')
@@ -333,8 +332,10 @@ def main():
     # append + nargs='+' need union
     ids = []
     ids.extend(reduce(set.union, map(set, args.id)))
-    fields = []
-    fields.extend(reduce(set.union, map(set, args.fields)))
+    fields = ['machine_id', 'last_passphrase_machine', 'last_passphrase_date']
+    if args.fields:
+        fields = []
+        fields.extend(reduce(set.union, map(set, args.fields)))
 
     print_help = None
 
@@ -349,7 +350,7 @@ def main():
         args.list = True
 
     if machines and args.list:
-        list_machines(machines, fields=fields, all_fields=args.all_fields, format=args.format, output=args.output, skip_column_names=args.skip_column_names, skip_last_passphrase=args.skip_last_passphrase)
+        list_machines(machines, fields=fields, all_fields=args.all_fields, format=args.format, output=args.output, skip_column_names=args.skip_column_names)
     elif machines and args.disable:
         disable_machines(machines)
     elif machines and args.enable:
